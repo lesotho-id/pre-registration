@@ -12,6 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import io.mosip.preregistration.application.errorcodes.DemographicErrorCodes;
+import io.mosip.preregistration.application.errorcodes.DemographicErrorMessages;
+import io.mosip.preregistration.application.repository.DemographicRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -84,6 +87,9 @@ public class DocumentService implements DocumentServiceIntf {
 	 */
 	@Autowired
 	private DocumentDAO documnetDAO;
+
+	@Autowired
+	private DemographicRepository demographicRepository;
 
 	/**
 	 * Reference for ${mosip.preregistration.document.upload.id} from property file
@@ -608,20 +614,15 @@ public class DocumentService implements DocumentServiceIntf {
 					if (demographicResponse.getStatusCode().toLowerCase()
 							.equals(StatusCodes.PENDING_APPOINTMENT.getCode().toLowerCase())) {
 						log.info("check if mandatory document deleted");
-						DemographicEntity demographicEntity = null;
-						try {
-							demographicEntity = documnetDAO.getDemographicEntityForPrid(preRegistrationId);
-						} catch (DocumentNotFoundException ex) {
-							if (demographicResponse.getStatusCode().toLowerCase()
-									.equals(StatusCodes.PENDING_APPOINTMENT.getCode().toLowerCase())
-									&& serviceUtil.validMandatoryDocuments(documentEntity.getDemographicEntity())
-											.size() > 0) {
-								serviceUtil.updateApplicationStatusToIncomplete(documentEntity.getDemographicEntity());
+						DemographicEntity demographicEntity = demographicRepository.findBypreRegistrationId(preRegistrationId);
+						if (demographicEntity != null) {
+							if (isMandatoryDocumentDeleted(demographicEntity)) {
+								log.info("mandatory document deleted");
+								serviceUtil.updateApplicationStatusToIncomplete(demographicEntity);
 							}
-						}
-						if (isMandatoryDocumentDeleted(demographicEntity)) {
-							log.info("mandatory document deleted");
-							serviceUtil.updateApplicationStatusToIncomplete(demographicEntity);
+						} else {
+							throw new RecordNotFoundException(DemographicErrorCodes.PRG_PAM_APP_005.getCode(),
+									DemographicErrorMessages.UNABLE_TO_FETCH_THE_PRE_REGISTRATION.getMessage());
 						}
 					}
 					if (!isDeleted) {

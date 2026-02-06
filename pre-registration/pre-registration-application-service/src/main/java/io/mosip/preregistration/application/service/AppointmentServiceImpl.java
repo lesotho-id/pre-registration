@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import io.mosip.preregistration.application.repository.DocumentDAO;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -89,6 +90,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
 	@Autowired
 	private ApplicationRepostiory applicationRepostiory;
+
+	@Autowired
+	private DocumentDAO documentDao;
 
 	public AuthUserDetails authUserDetails() {
 		return (AuthUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -342,7 +346,14 @@ public class AppointmentServiceImpl implements AppointmentService {
 			browserInfo.setBrowserName(userAgent);
 			DemographicResponseDTO demographicData = demographicService.getDemographicData(preRegistrationId)
 					.getResponse();
-			DocumentsMetaData documentsData = documentService.getAllDocumentForPreId(preRegistrationId).getResponse();
+
+			DocumentsMetaData documentsData = null;
+			Boolean documenExists = documentDao.existsByPreregId(preRegistrationId);
+
+			if(documenExists) {
+				documentsData = documentService.getAllDocumentForPreId(preRegistrationId).getResponse();
+			}
+
 			BookingRegistrationDTO bookingData = new BookingRegistrationDTO();
 			bookingData.setRegistrationCenterId(bookRequest.getRegistrationCenterId());
 			bookingData.setRegDate(bookRequest.getRegDate());
