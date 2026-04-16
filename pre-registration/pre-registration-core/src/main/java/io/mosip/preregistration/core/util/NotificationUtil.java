@@ -76,6 +76,9 @@ public class NotificationUtil {
 
 	@Value("${mosip.utc-datetime-pattern}")
 	private String dateTimeFormat;
+	
+	@Value("${notification.sms.enabled:true}")
+	private boolean smsEnabled;
 
 	public MainResponseDTO<NotificationResponseDTO> notify(String notificationType, NotificationDTO acknowledgementDTO,
 			MultipartFile file) throws IOException {
@@ -83,7 +86,7 @@ public class NotificationUtil {
 		log.info("sessionId", "idType", "id", "In notify method of NotificationUtil service:" + notificationType);
 
 		MainResponseDTO<NotificationResponseDTO> response = new MainResponseDTO<>();
-		if (notificationType.equals(RequestCodes.SMS)) {
+		if (smsEnabled && notificationType.equals(RequestCodes.SMS)) {
 			response = smsNotification(acknowledgementDTO);
 		}
 		if (notificationType.equals(RequestCodes.EMAIL)) {
