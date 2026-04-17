@@ -224,7 +224,7 @@ public class NotificationUtil {
 	 */
 	public MainResponseDTO<NotificationResponseDTO> smsNotification(NotificationDTO acknowledgementDTO)
 			throws IOException {
-		log.info("sessionId", "idType", "id", "In smsNotification method of NotificationUtil service");
+		log.info("sessionId", "idType", "id", "In smsNotification method of NotificationUtil service enable check - "+smsEnabled);
 		MainResponseDTO<NotificationResponseDTO> response = new MainResponseDTO<>();
 		ResponseEntity<ResponseWrapper<NotificationResponseDTO>> resp = null;
 		String mergeTemplate = null;
